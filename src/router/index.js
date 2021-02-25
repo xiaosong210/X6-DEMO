@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+import HOME from '../views/HOME.vue'
+import FLOW from '../views/FLOW.vue'
 import X6Page from '../components/X6-Page.vue'
 
 Vue.use(VueRouter)
@@ -8,14 +9,14 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home,
-    redirect: '/x6page',
+    name: 'HOME',
+    component: HOME,
+    redirect: '/FLOW',
     children: [
       {
-        path: '/x6page',
-        name: 'x6page',
-        component: X6Page
+        path: '/FLOW',
+        name: 'FLOW',
+        component: FLOW,
       }
     ]
   }
