@@ -31,7 +31,7 @@ export const FlowChartRect = Graph.registerNode('flow-chart-rect', {
         width: '100%',
         textAlign: 'center',
         fontSize: 12,
-        color: 'rgba(0,0,0,0.85)'
+        color: 'rgba(0,0,0,0.85)',
       }
     },
     text: {
@@ -531,9 +531,9 @@ NodeGroup.config({
       stroke: '#5F95FF'
     },
     image: {
-      // 'xlink:href': 'https://gw.alipayobjects.com/mdn/rms_0b51a4/afts/img/A*X4e0TrDsEiIAAAAAAAAAAAAAARQnAQ',
+      'xlink:href': 'https://gw.alipayobjects.com/mdn/rms_0b51a4/afts/img/A*X4e0TrDsEiIAAAAAAAAAAAAAARQnAQ',
       // 'xlink:href': '/img/logo.82b9c7a5.png',
-      'xlink:href': require('../../../assets/logo.png'),
+      // 'xlink:href': require('../../../assets/logo.png'),
       width: 16,
       height: 16,
       x: 8,

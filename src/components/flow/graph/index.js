@@ -1,15 +1,15 @@
 import { Graph, FunctionExt, Shape, Addon } from '@antv/x6'
 import './shape'
-// import graphData from './data'
+import graphData from './data'
 
 export default class FlowGraph {
 // 类构造方法
   constructor () {
-    this.initGraph()
-    this.initStencil()
-    this.initShape()
-    // this.initGraphShape()
-    // this.initEvent()
+    this.initGraph();//初始化画板
+    this.initStencil();// 初始化左侧组件
+    this.initShape();// 数据加载给面板和左侧组件输出化数据
+    this.initGraphShape();// 面板数据渲染
+    this.initEvent()
   }
 
   // 初始化面板
@@ -18,6 +18,9 @@ export default class FlowGraph {
       container: document.getElementById('container'),
       width: document.getElementById('canvas-panel').scrollWidth,
       height: document.getElementById('canvas-panel').scrollHeight,
+      resizing: {
+        enabled: true,
+      },
       scroller: {
         enabled: true,
       },
@@ -35,26 +38,17 @@ export default class FlowGraph {
       grid: {
         size: 10,
         visible: true,
-        type: 'doubleMesh',
-        args: [
-          {
-            color: '#cccccc',
-            thickness: 1
-          },
-          {
-            color: '#999999',
-            thickness: 1,
-            factor: 4
-          }
-        ]
+        type: 'mesh',
       },
+      //点选/框选节点
       selecting: {
         enabled: true,
-        multiple: true,
-        rubberband: true,
-        movable: true,
-        showNodeSelectionBox: true
+        multiple: true,//是否启用点击多选，启用后按ctrl和command 键点击节点实现多选
+        rubberband: true,//是否启用框选
+        movable: true,//选中节点是否可以被移动
+        showNodeSelectionBox: true,//是否显示节点的选择框
       },
+      //配置全局的连线规则
       connecting: {
         anchor: 'center',
         connectionPoint: 'anchor',
@@ -117,6 +111,7 @@ export default class FlowGraph {
       keyboard: {
         enabled: true
       },
+      //将一个节点拖动到另一个节点中，使其成为另一节点的子节点
       embedding: {
         enabled: true,
         findParent ({ node }) {
@@ -134,6 +129,7 @@ export default class FlowGraph {
       }
     })
   }
+
   // 初始化左侧组件
   initStencil () {
     this.stencil = new Addon.Stencil({
@@ -172,6 +168,7 @@ export default class FlowGraph {
       stencilContainer.appendChild(this.stencil.container)
     }
   }
+
   // 数据加载给面板和左侧组件输出化数据
   initShape () {
     const r1 = this.graph.createNode({
@@ -288,5 +285,78 @@ export default class FlowGraph {
     this.stencil.load([r1, r2, r3, r4], 'basic')
     this.stencil.load([c1, c2, c3], 'combination')
     this.stencil.load([g1], 'group')
+  }
+
+  // 面板数据渲染
+  initGraphShape () {
+    this.graph.fromJSON(graphData)
+  }
+
+  // 连接点显示
+  showPorts (ports, show) {
+    for (let i = 0, len = ports.length; i < len; i = i + 1) {
+      ports[i].style.visibility = show ? 'visible' : 'hidden'
+    }
+  }
+
+  // 初始化事件
+  initEvent () {
+    const { graph } = this
+    const container = document.getElementById('container')
+
+    graph.on('node:contextmenu', ({ cell, view }) => {
+      const oldText = cell.attr('text/text')
+      const elem = view.container.querySelector('.x6-edit-text')
+      if (elem == null) { return }
+      cell.attr('text/style/display', 'none')
+      if (elem) {
+        elem.style.display = ''
+        elem.contentEditable = 'true'
+        elem.innerText = oldText
+        elem.focus()
+      }
+      const onBlur = () => {
+        cell.attr('text/text', elem.innerText)
+        cell.attr('text/style/display', '')
+        elem.style.display = 'none'
+        elem.contentEditable = 'false'
+      }
+      elem.addEventListener('blur', () => {
+        onBlur()
+        elem.removeEventListener('blur', onBlur)
+      })
+    })
+
+    graph.on('node:mouseenter', FunctionExt.debounce(() => {
+      const ports = container.querySelectorAll('.x6-port-body')
+      this.showPorts(ports, true)
+    }), 500)
+    graph.on('node:mouseleave', () => {
+      const ports = container.querySelectorAll(
+        '.x6-port-body'
+      )
+      this.showPorts(ports, false)
+    })
+
+    graph.on('node:collapse', ({ node, e }) => {
+      e.stopPropagation()
+      node.toggleCollapse()
+      const collapsed = node.isCollapsed()
+      const cells = node.getDescendants()
+      cells.forEach((n) => {
+        if (collapsed) {
+          n.hide()
+        } else {
+          n.show()
+        }
+      })
+    })
+
+    graph.bindKey('backspace', () => {
+      const cells = graph.getSelectedCells()
+      if (cells.length) {
+        graph.removeCells(cells)
+      }
+    })
   }
 }
